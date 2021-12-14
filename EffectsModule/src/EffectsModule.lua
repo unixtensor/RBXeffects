@@ -1,21 +1,22 @@
 -- interpreterK
 -- github.
 
+--[[
+	All the effects use TweenService so you can control them with built-in TweenService functions such as: ":Play(), ":Cancel()", ".Completed", etc...
+]]
+
 local Module = {Autoplay = false}
 Module.__index = Module
 
 local F = {
-	rand = math.random,
 	CN = CFrame.new,
 	ANG = CFrame.Angles,
 	V3 = Vector3.new,
 	RN = Random.new,
 	rad = math.rad,
-	abs = math.abs,
-	sin = math.sin,
-	cos = math.cos,
-	pi = math.pi,
-	Euler = CFrame.fromEulerAnglesXYZ
+	deg = math.deg,
+	resume = coroutine.resume,
+	create = coroutine.create
 }
 local TS = game:GetService("TweenService")
 
@@ -48,7 +49,7 @@ function Module:ScatterOut(Part, rLimit, vLimit, ...)
 		vLimit = vLimit or {-15, 15}
 
 		local Tween = TS:Create(Part, TweeningInfo(...), {
-			CFrame = Part.CFrame * (F.ANG(F.rad(F.rand(unpack(rLimit))),F.rad(F.rand(unpack(rLimit))),F.rad(F.rand(unpack(rLimit))))) * (F.CN(F.rand(unpack(vLimit)),F.rand(unpack(vLimit)),F.rand(unpack(vLimit))))
+			CFrame = Part.CFrame * F.ANG(F.rad(RandDec(unpack(rLimit))), F.rad(RandDec(unpack(rLimit))), F.rad(RandDec(unpack(rLimit)))) * F.CN(RandDec(unpack(vLimit)), RandDec(unpack(vLimit)), RandDec(unpack(vLimit)))
 		})
 		if self.Autoplay then
 			Tween:Play()
@@ -57,7 +58,38 @@ function Module:ScatterOut(Part, rLimit, vLimit, ...)
 	end
 end
 
-function Module:SizeOut(Part, sLimit, ...)
+function Module:AnglelessScatterOut(Part, vLimit, ...)
+	if IsAPart(Part) then
+		vLimit = vLimit or {-15, 15}
+		
+		local Tween = TS:Create(Part, TweeningInfo(...), {
+			CFrame = Part.CFrame * F.CN(RandDec(unpack(vLimit)), RandDec(unpack(vLimit)), RandDec(unpack(vLimit)))
+		})
+		if self.Autoplay then
+			Tween:Play()
+		end
+		return Tween, Part
+	end
+end
+
+function Module:CompleteScatterOut(Part, Xlimit, Ylimit, Zlimit, Rlimit, ...)
+	if IsAPart(Part) then
+		Xlimit = Xlimit or {-50, 50}
+		Ylimit = Ylimit or {-50, 50}
+		Zlimit = Zlimit or {-50, 50}
+		Rlimit = Rlimit or {-50, 50}
+
+		local Tween = TS:Create(Part, TweeningInfo(...), {
+			CFrame = Part.CFrame * F.CN(RandDec(unpack(Xlimit)), RandDec(unpack(Ylimit)), RandDec(unpack(Zlimit))) * F.ANG(F.rad(RandDec(unpack(Rlimit))), F.rad(RandDec(unpack(Rlimit))), F.rad(RandDec(unpack(Rlimit))))
+		})
+		if self.Autoplay then
+			Tween:Play()
+		end
+		return Tween, Part
+	end
+end
+
+function Module:SizeFactor(Part, sLimit, ...)
 	if IsAPart(Part) then
 		sLimit = sLimit or {0, 0, 0}
 
@@ -115,15 +147,12 @@ function Module:FloatUp(Part, DownBarrier, UpLimit, ...)
 	end
 end
 
-function Module:SpewOut(Part, Xlimit, Ylimit, Zlimit, Rlimit, ...)
+function Module:RandomRotate(Part, rLimit, ...)
 	if IsAPart(Part) then
-		Xlimit = Xlimit or {-100, 100}
-		Ylimit = Ylimit or {-100, 100}
-		Zlimit = Zlimit or {-100, 100}
-		Rlimit = Rlimit or {-360, 360}
+		rLimit = rLimit or {-360, 360}
 
 		local Tween = TS:Create(Part, TweeningInfo(...), {
-			CFrame = Part.CFrame * F.CN(RandDec(unpack(Xlimit)), RandDec(unpack(Ylimit)), RandDec(unpack(Zlimit))) * F.ANG(F.rad(RandDec(unpack(Rlimit))), F.rad(RandDec(unpack(Rlimit))), F.rad(RandDec(unpack(Rlimit))))
+			CFrame = Part.CFrame * F.ANG(F.rad(RandDec(unpack(rLimit))), F.rad(RandDec(unpack(rLimit))), F.rad(RandDec(unpack(rLimit))))
 		})
 		if self.Autoplay then
 			Tween:Play()
@@ -132,17 +161,12 @@ function Module:SpewOut(Part, Xlimit, Ylimit, Zlimit, Rlimit, ...)
 	end
 end
 
-function Module:SpewIn(Part, Xlimit, Ylimit, Zlimit, Rlimit, ...)
+function Module:RandomCFrame(Part, cLimit, ...)
 	if IsAPart(Part) then
-		local CF = Part.CFrame
-		Xlimit = Xlimit or {-100, 100}
-		Ylimit = Ylimit or {-100, 100}
-		Zlimit = Zlimit or {-100, 100}
-		Rlimit = Rlimit or {-360, 360}
-
-		Part.CFrame *= F.CN(RandDec(unpack(Xlimit)), RandDec(unpack(Ylimit)), RandDec(unpack(Zlimit))) * F.ANG(F.rad(RandDec(unpack(Rlimit))), F.rad(RandDec(unpack(Rlimit))), F.rad(RandDec(unpack(Rlimit))))
-		local Tween = TS:Create(Part, TweeningInfo(...), {
-			CFrame = CF
+		cLimit = cLimit or {-20, 20}
+		
+		local Tween = TS:Create(Part, TweenInfo(...), {
+			CFrame = Part.CFrame * F.CN(unpack(cLimit), unpack(cLimit), unpack(cLimit))
 		})
 		if self.Autoplay then
 			Tween:Play()
@@ -150,6 +174,5 @@ function Module:SpewIn(Part, Xlimit, Ylimit, Zlimit, Rlimit, ...)
 		return Tween, Part
 	end
 end
-
 
 return Module
