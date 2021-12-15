@@ -1,6 +1,6 @@
 -- interpreterK
 -- https://github.com/interpreterK/RBXeffects/blob/main/EffectsModule/src/EffectsModule.lua
--- Tween effects use TweenService so you can control them with built-in functions such as: ":Play(), ":Cancel()", ".Completed", etc...
+-- All the effects use TweenService so you can control them with built-in TweenService functions such as: ":Play(), ":Cancel()", ".Completed", etc...
 
 local Module = {
 	Autoplay = false, -- Not needed for non-tween functions.
@@ -20,7 +20,8 @@ local F = {
 	pi = math.pi,
 	cos = math.cos,
 	sin = math.sin,
-	sine = 0
+	sine = 0,
+	wait = task.wait
 }
 local TS = game:GetService("TweenService")
 local RS = game:GetService("RunService")
@@ -77,7 +78,7 @@ function Module:AnglelessScatterOut(Part, vLimit, ...)
 	end
 end
 
-function Module:CompleteScatterOut(Part, Xlimit, Ylimit, Zlimit, Rlimit, ...)
+function Module:CompleteScatterOut(Part, Xlimit, Ylimit, Zlimit, Rlimit, ...) -- Like :ScatterOut but control over all CFrame values.
 	if IsAPart(Part) then
 		Xlimit = Xlimit or {-50, 50}
 		Ylimit = Ylimit or {-50, 50}
@@ -230,6 +231,20 @@ function Module.NonTweens:WaveFloat(Part, Change, div, offsetH, offset)
 		local Connection = RS.Heartbeat:Connect(function()
 			F.sine += Change
 			Part.CFrame = Part.CFrame:Lerp(Origin * F.CN(0, offsetH * F.cos(F.sine / div), 0), 1 / 6)
+		end)
+		table.insert(self.Connections, Connection)
+		return Connection, Part
+	end
+end
+
+function Module.NonTweens:Spiral(Part, CFx, CFy, CFz)
+	if IsAPart(Part) then
+		CFx = CFx or 0
+		CFy = CFy or 0.50
+		CFz = CFz or 0
+		
+		local Connection = RS.Heartbeat:Connect(function()
+			Part.CFrame *= F.CN(CFx, CFy, CFz) * F.ANG(0.1, 0, 0.1)
 		end)
 		table.insert(self.Connections, Connection)
 		return Connection, Part
