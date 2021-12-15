@@ -3,7 +3,10 @@
 -- All the effects use TweenService so you can control them with built-in TweenService functions such as: ":Play(), ":Cancel()", ".Completed", etc...
 
 local Module = {
-	Autoplay = false
+	Autoplay = false, -- Not needed for non-tween functions.
+	NonTweens = {
+		Connections = {}
+	},
 }
 Module.__index = Module
 
@@ -14,10 +17,13 @@ local F = {
 	RN = Random.new,
 	rad = math.rad,
 	deg = math.deg,
-	resume = coroutine.resume,
-	create = coroutine.create
+	pi = math.pi,
+	cos = math.cos,
+	sin = math.sin,
+	sine = 0
 }
 local TS = game:GetService("TweenService")
+local RS = game:GetService("RunService")
 
 local function RandDec(min, max)
 	return F.RN():NextNumber(min, max)
@@ -60,7 +66,7 @@ end
 function Module:AnglelessScatterOut(Part, vLimit, ...)
 	if IsAPart(Part) then
 		vLimit = vLimit or {-15, 15}
-		
+
 		local Tween = TS:Create(Part, TweeningInfo(...), {
 			CFrame = Part.CFrame * F.CN(RandDec(unpack(vLimit)), RandDec(unpack(vLimit)), RandDec(unpack(vLimit)))
 		})
@@ -163,7 +169,7 @@ end
 function Module:RandomCFrame(Part, cLimit, ...)
 	if IsAPart(Part) then
 		cLimit = cLimit or {-20, 20}
-		
+
 		local Tween = TS:Create(Part, TweenInfo(...), {
 			CFrame = Part.CFrame * F.CN(unpack(cLimit), unpack(cLimit), unpack(cLimit))
 		})
@@ -171,6 +177,62 @@ function Module:RandomCFrame(Part, cLimit, ...)
 			Tween:Play()
 		end
 		return Tween, Part
+	end
+end
+
+-- Non Tweens
+
+function Module.NonTweens:StopEffects()
+	for i = 1, #self.Connections do
+		local con = self.Connections[i]
+		con:Disconnect()
+	end
+	self.Connections = {}
+end
+
+function Module.NonTweens:Orbit(Part, dist, angle)
+	if IsAPart(Part) then
+		local Origin = Part.CFrame or F.CN()
+		dist = dist or 10
+		angle = angle or 0
+		
+		local rpers = F.pi
+		local Connection = RS.Heartbeat:Connect(function(delta)
+			angle = (angle + delta * rpers) % (2 * F.pi)
+			Part.CFrame = Origin * F.CN(F.sin(angle) * dist, 0, F.cos(angle) * dist)
+		end)
+		table.insert(self.Connections, Connection)
+		return Connection, Part
+	end
+end
+
+function Module.NonTweens:Spin(Part, radians, usingDeg)
+	if IsAPart(Part) then
+		radians = radians or 1
+		usingDeg = usingDeg and F.deg or F.rad
+		
+		local Connection = RS.Heartbeat:Connect(function()
+			Part.CFrame *= F.ANG(0, usingDeg(radians), 0)
+		end)
+		table.insert(self.Connections, Connection)
+		return Connection, Part
+	end
+end
+
+function Module.NonTweens:WaveFloat(Part, Change, div, offsetH, offset)
+	if IsAPart(Part) then
+		F.sine = 0
+		Change = Change or 1
+		div = div or 20
+		offsetH = offsetH or 1.80
+		
+		local Origin = Part.CFrame or F.CN()
+		local Connection = RS.Heartbeat:Connect(function()
+			F.sine += Change
+			Part.CFrame = Part.CFrame:Lerp(Origin * F.CN(0, offsetH * F.cos(F.sine / div), 0), 1 / 6)
+		end)
+		table.insert(self.Connections, Connection)
+		return Connection, Part
 	end
 end
 
