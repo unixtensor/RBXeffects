@@ -1,6 +1,6 @@
 -- interpreterK
 -- https://github.com/interpreterK/RBXeffects/blob/main/EffectsModule/src/EffectsModule.lua
--- All the effects use TweenService so you can control them with built-in TweenService functions such as: ":Play(), ":Cancel()", ".Completed", etc...
+-- Tween effects use TweenService so you can control them with built-in functions such as: ":Play(), ":Cancel()", ".Completed", etc...
 
 local Module = {
 	Autoplay = false, -- Not needed for non-tween functions.
